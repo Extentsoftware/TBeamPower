@@ -1,6 +1,4 @@
-# TTGO T-Beam Deep Sleep Power Test
-
-## TTGO Product Upgrade V07->V8
+# TTGO T-Beam Power Control Library
 
 Lilygo released V8 of the TTGO T-Beam board in August 2019. This rework included several changes mainly targetted at reducing power consumption by using integrating the AXP192 power controller IC. A list of the changes is as follows:
 
