@@ -1,0 +1,26 @@
+{
+    "name": "TBeamPower",
+    "keywords": "ttgo tbeam power axp192",
+    "description": "Power Control Library for TTGO T-Beam using AXP192 Power controller IC",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/Extentsoftware/TBeamPower.git"
+    },
+    "authors": 
+    [
+      {
+        "name": "Marcus Poulton",
+        "email": "marcus.poulton@gmail.com",
+        "maintainer": true
+      }
+    ],
+    "dependencies":
+    {
+      "name": "AXP202X_Library",
+      "frameworks": "arduino"
+    },
+    "version": "1.0.0",
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+  }
