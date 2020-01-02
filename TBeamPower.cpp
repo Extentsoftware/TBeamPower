@@ -11,6 +11,14 @@ TBeamPower::TBeamPower(int batt_pin, int adx_sda, int adx_scl, int pwr_pin)
     adxscl=adx_scl;
 }
 
+TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin)
+{
+    sensor_pwr_pin = pwr_pin;
+    battery_pin = TBP_NO_PIN;
+    adxsda=adx_sda;
+    adxscl=adx_scl;
+}
+
 void TBeamPower::begin(void)
 {
     Wire.begin(adxsda, adxscl);  
@@ -106,8 +114,9 @@ float TBeamPower::get_battery_voltage()
         else
             return axp.getSysIPSOUTVoltage() / 1000.0;        
     }
-    else
-    {
+    else if(battery_pin == TBP_NO_PIN){
+        return -1;
+    }else{
         // we've set 10-bit ADC resolution 2^10=1024 and voltage divider makes it half of maximum readable value (which is 3.3V)
         // set battery measurement pin
         adcAttachPin(battery_pin);
@@ -119,8 +128,9 @@ float TBeamPower::get_battery_voltage()
 
 void TBeamPower::power_sensors(bool on)
 {
-    if (on)
-    {
+    if(sensor_pwr_pin==TBP_NO_PIN){
+        return;
+    }else if (on){
         pinMode(sensor_pwr_pin, OUTPUT);    // power enable for the sensors
         digitalWrite(sensor_pwr_pin, HIGH); // turn off power to the sensor bus
     }

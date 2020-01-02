@@ -1,6 +1,8 @@
 #ifndef __TBEAMPOWER
 #define __TBEAMPOWER
 
+#define TBP_NO_PIN -1
+
 #include "Arduino.h"
 #include <axp20x.h>
 #include <esp_wifi.h>
@@ -20,7 +22,8 @@ protected:
     int adxscl;
 
  public:
-    TBeamPower(int batt_pin = 35, int adx_sda = 21, int adx_scl = 22, int pwr_pin = -1);
+    TBeamPower(int batt_pin = 35, int adx_sda = 21, int adx_scl = 22, int pwr_pin = TBP_NO_PIN);
+    TBeamPower(int adx_sda = 21, int adx_scl = 22, int pwr_pin = TBP_NO_PIN);
     void begin(void);
     void print_status();
     void print_wakeup_reason();
