@@ -3,7 +3,7 @@
 
 #define S_to_uS_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
-TBeamPower::TBeamPower(int batt_pin, int adx_sda, int adx_scl, int pwr_pin)
+TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin)
 {
     sensor_pwr_pin = pwr_pin;
     battery_pin = batt_pin;
@@ -26,6 +26,13 @@ void TBeamPower::begin(void)
         Serial.println("AXP192 Begin FAIL");
         return;
     }
+}
+
+bool TBeamPower::hasAXP(void){
+    return hasAXP192;
+}
+void TBeamPower::shutdown(void){
+    axp.shutdown();
 }
 
 void TBeamPower::print_wakeup_reason()
@@ -79,35 +86,44 @@ void TBeamPower::flashlight(char code)
 
 void TBeamPower::print_status()
 {
+    if (hasAXP192)
+    {
+        Serial.printf("Voltages:\n");
+        Serial.printf("         DCDC1: %.2fv\n", axp.getDCDC1Voltage() / 1000.0);
+        Serial.printf("         DCDC2: %.2fv\n", axp.getDCDC2Voltage() / 1000.0);
+        Serial.printf("         DCDC3: %.2fv\n", axp.getDCDC3Voltage() / 1000.0);
+        Serial.printf("         LDO2: %.2fv\n", axp.getLDO2Voltage()  / 1000.0);
+        Serial.printf("         LDO3: %.2fv\n", axp.getLDO3Voltage()  / 1000.0);
+        Serial.printf("ChargeCurrent:   %.2fA\n", axp.getSettingChargeCurrent()/1000.0);
+        Serial.printf("IPSOUTVoltage:   %.2fv\n", axp.getSysIPSOUTVoltage() / 1000.0);
+        Serial.printf("Temp:            %.2f°C\n", axp.getTemp() /10.0);
+        Serial.printf("TSTemp:          %.2f\n", axp.getTSTemp());
+        Serial.printf("VbusCurrent:     %.2f\n", axp.getVbusCurrent());
+        Serial.printf("VbusVoltage:     %.2f\n", axp.getVbusVoltage() / 1000.0);
+        Serial.printf("Battery:\n");
+        Serial.printf("         Connected: %s\n",    axp.isBatteryConnect()?"true":"false");
+        Serial.printf("         Charging:  %s\n",    axp.isChargeing()?"true":"false");
+        Serial.printf("         ChargEN :  %s\n",    axp.isChargeingEnable()?"true":"false");
+        Serial.printf("         Voltage:   %.2fv\n", axp.getBattVoltage() / 1000.0);
+        //Serial.printf("         Percent:   %d\n",    axp.getBattPercentage());
+        Serial.printf("         Inpower:   %.2f\n",  axp.getBattInpower() /1000.0);
+        Serial.printf("         DischgCur: %.2f\n",  axp.getBattDischargeCurrent()/1000.0);
+        Serial.printf("         ChargeCur: %.2f\n",  axp.getBattChargeCurrent()/1000.0);      
+    }
 }
 
 float TBeamPower::get_battery_voltage()
 {
     if (hasAXP192)
     {
-        Serial.printf("Battery Percent: %d\n", axp.getBattPercentage());
-        Serial.printf("DCDC1:           %f\n", axp.getDCDC1Voltage() / 1000.0);
-        Serial.printf("DCDC2:           %f\n", axp.getDCDC2Voltage() / 1000.0);
-        Serial.printf("DCDC3:           %f\n", axp.getDCDC3Voltage() / 1000.0);
-        Serial.printf("ChargeCurrent:   %f\n", axp.getSettingChargeCurrent());
-        Serial.printf("IPSOUTVoltage:   %f\n", axp.getSysIPSOUTVoltage() / 1000.0);
-        Serial.printf("Temp:            %f\n", axp.getTemp());
-        Serial.printf("TSTemp:          %f\n", axp.getTSTemp());
-        Serial.printf("VbusCurrent:     %f\n", axp.getVbusCurrent());
-        Serial.printf("VbusVoltage:     %f\n", axp.getVbusVoltage() / 1000.0);
-        Serial.printf("BattInpower:     %f\n", axp.getBattInpower());
-        Serial.printf("BattDischgCur:   %f\n", axp.getBattDischargeCurrent());
-        Serial.printf("BattChargeCur:   %f\n", axp.getBattChargeCurrent());
-        Serial.printf("LDO2Voltage:     %d\n", axp.getLDO2Voltage());
-        Serial.printf("LDO3Voltage:     %d\n", axp.getLDO3Voltage());
-
         if (axp.isBatteryConnect())
             return axp.getBattVoltage() / 1000.0;
         else
-            return axp.getSysIPSOUTVoltage() / 1000.0;        
+            return 0.0;        
     }
-    else
-    {
+    else if(battery_pin == TBP_NO_PIN){
+        return -1;
+    }else{
         // we've set 10-bit ADC resolution 2^10=1024 and voltage divider makes it half of maximum readable value (which is 3.3V)
         // set battery measurement pin
         adcAttachPin(battery_pin);
@@ -119,8 +135,9 @@ float TBeamPower::get_battery_voltage()
 
 void TBeamPower::power_sensors(bool on)
 {
-    if (on)
-    {
+    if(sensor_pwr_pin==TBP_NO_PIN){
+        return;
+    }else if (on){
         pinMode(sensor_pwr_pin, OUTPUT);    // power enable for the sensors
         digitalWrite(sensor_pwr_pin, HIGH); // turn off power to the sensor bus
     }

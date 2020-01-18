@@ -1,6 +1,8 @@
 #ifndef __TBEAMPOWER
 #define __TBEAMPOWER
 
+#define TBP_NO_PIN -1
+
 #include "Arduino.h"
 #include <axp20x.h>
 #include <esp_wifi.h>
@@ -20,8 +22,9 @@ protected:
     int adxscl;
 
  public:
-    TBeamPower(int batt_pin = 35, int adx_sda = 21, int adx_scl = 22, int pwr_pin = -1);
+    TBeamPower(int adx_sda = 21, int adx_scl = 22, int sensor_pwr_pin = TBP_NO_PIN, int batt_pin = TBP_NO_PIN);
     void begin(void);
+    bool hasAXP();
     void print_status();
     void print_wakeup_reason();
     void flashlight(char code);
@@ -32,6 +35,7 @@ protected:
     void power_peripherals(bool on);
     void power_GPS(bool on);
     void power_LoRa(bool on);
+    void shutdown();
  private:
 };
 
