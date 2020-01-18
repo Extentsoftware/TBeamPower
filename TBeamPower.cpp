@@ -138,7 +138,7 @@ void TBeamPower::power_peripherals(bool on)
 
 void TBeamPower::power_GPS(bool on)
 {
-    axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF); // LoRa Power
+    axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF); // GPS Power
 }
 
 void TBeamPower::power_LoRa(bool on)
