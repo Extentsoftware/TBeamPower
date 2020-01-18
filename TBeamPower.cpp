@@ -177,6 +177,8 @@ void TBeamPower::deep_sleep(uint64_t timetosleep)
         {
             if (timetosleep > 60)
                 timetosleep = timetosleep - 60;
+            else if (timetosleep == 10)
+                return; // avoid infinite loop
             else
                 timetosleep = 10;
         }
