@@ -22,8 +22,7 @@ protected:
     int adxscl;
 
  public:
-    TBeamPower(int batt_pin = 35, int adx_sda = 21, int adx_scl = 22, int pwr_pin = TBP_NO_PIN);
-    TBeamPower(int adx_sda = 21, int adx_scl = 22, int pwr_pin = TBP_NO_PIN);
+    TBeamPower(int adx_sda = 21, int adx_scl = 22, int sensor_pwr_pin = TBP_NO_PIN, int batt_pin = TBP_NO_PIN);
     void begin(void);
     bool hasAXP();
     void print_status();

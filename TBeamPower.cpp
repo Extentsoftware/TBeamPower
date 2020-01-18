@@ -3,18 +3,10 @@
 
 #define S_to_uS_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
-TBeamPower::TBeamPower(int batt_pin, int adx_sda, int adx_scl, int pwr_pin)
+TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin)
 {
     sensor_pwr_pin = pwr_pin;
     battery_pin = batt_pin;
-    adxsda=adx_sda;
-    adxscl=adx_scl;
-}
-
-TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin)
-{
-    sensor_pwr_pin = pwr_pin;
-    battery_pin = TBP_NO_PIN;
     adxsda=adx_sda;
     adxscl=adx_scl;
 }
