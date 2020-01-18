@@ -2,6 +2,7 @@
     "name": "TBeamPower",
     "keywords": "ttgo tbeam power axp192",
     "description": "Power Control Library for TTGO T-Beam using AXP192 Power controller IC",
+	"license": "LGPL-3.0-or-later",
     "repository":
     {
       "type": "git",
