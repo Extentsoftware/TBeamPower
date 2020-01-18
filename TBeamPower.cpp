@@ -36,6 +36,13 @@ void TBeamPower::begin(void)
     }
 }
 
+bool TBeamPower::hasAXP(void){
+    return hasAXP192;
+}
+void TBeamPower::shutdown(void){
+    axp.shutdown();
+}
+
 void TBeamPower::print_wakeup_reason()
 {
     esp_sleep_wakeup_cause_t wakeup_reason;
