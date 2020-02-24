@@ -175,7 +175,6 @@ void TBeamPower::deep_sleep(uint64_t timetosleep)
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF);
 
     // turnOffWifi
-    esp_wifi_stop();
     esp_wifi_deinit();
 
     // turnOffBluetooth
