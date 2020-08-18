@@ -13,6 +13,7 @@ TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin)
 
 void TBeamPower::begin(void)
 {
+    power_sensors(false);
     Wire.begin(adxsda, adxscl);  
     hasAXP192 = !axp.begin(Wire, AXP192_SLAVE_ADDRESS);
     if (hasAXP192)
