@@ -13,27 +13,36 @@ TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin)
 
 void TBeamPower::begin(void)
 {
-    power_sensors(false);
-    Wire.begin(adxsda, adxscl);  
-    hasAXP192 = !axp.begin(Wire, AXP192_SLAVE_ADDRESS);
-    if (hasAXP192)
+    if (adxsda==TBP_NO_PIN)
     {
-        Serial.println("AXP192 Begin PASS");
-        axp.setDCDC1Voltage(3300);
-        led_onoff(false);
+        hasAXP192 = false;    
     }
     else
     {
-        Serial.println("AXP192 Begin FAIL");
-        return;
-    }
+        Wire.begin(adxsda, adxscl);  
+        hasAXP192 = !axp.begin(Wire, AXP192_SLAVE_ADDRESS);
+        if (hasAXP192)
+        {
+            Serial.println("AXP192 Begin PASS");
+            axp.setDCDC1Voltage(3300);
+            led_onoff(false);
+        }
+        else
+        {
+            Serial.println("AXP192 Begin FAIL");
+            return;
+        }
+    }    
 }
 
 bool TBeamPower::hasAXP(void){
     return hasAXP192;
 }
 void TBeamPower::shutdown(void){
-    axp.shutdown();
+    if (hasAXP192)
+    {
+        axp.shutdown();
+    }
 }
 
 void TBeamPower::print_wakeup_reason()
@@ -67,10 +76,13 @@ void TBeamPower::print_wakeup_reason()
 
 void TBeamPower::led_onoff(bool on)
 {
-    if (on)
-        axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
-    else
-        axp.setChgLEDMode(AXP20X_LED_OFF);
+    if (hasAXP192)
+    {
+        if (on)
+            axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
+        else
+            axp.setChgLEDMode(AXP20X_LED_OFF);
+    }
 }
 
 void TBeamPower::flashlight(char code)
@@ -148,21 +160,31 @@ void TBeamPower::power_sensors(bool on)
 
 void TBeamPower::power_peripherals(bool on)
 {
-    axp.setPowerOutPut(AXP192_DCDC1, on ? AXP202_ON : AXP202_OFF);
-    axp.setPowerOutPut(AXP192_DCDC2, on ? AXP202_ON : AXP202_OFF);
-    axp.setPowerOutPut(AXP192_LDO2, on ? AXP202_ON : AXP202_OFF);
-    axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF);
+    if (hasAXP192)
+    {
+        axp.setPowerOutPut(AXP192_DCDC1, on ? AXP202_ON : AXP202_OFF);
+        axp.setPowerOutPut(AXP192_DCDC2, on ? AXP202_ON : AXP202_OFF);
+        axp.setPowerOutPut(AXP192_LDO2, on ? AXP202_ON : AXP202_OFF);
+        axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF);
+    }
 }
 
 void TBeamPower::power_GPS(bool on)
 {
-    axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF); // GPS Power
+    if (hasAXP192)
+    {
+        axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF); // GPS Power
+    }
 }
 
 void TBeamPower::power_LoRa(bool on)
 {
-    axp.setPowerOutPut(AXP192_LDO2, on ? AXP202_ON : AXP202_OFF); // LoRa Power
+    if (hasAXP192)
+    {
+        axp.setPowerOutPut(AXP192_LDO2, on ? AXP202_ON : AXP202_OFF); // LoRa Power
+    }
 }
+
 
 void TBeamPower::deep_sleep(uint64_t timetosleep)
 {
