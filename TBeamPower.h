@@ -1,4 +1,4 @@
-#ifndef __TBEAMPOWER
+   #ifndef __TBEAMPOWER
 #define __TBEAMPOWER
 
 #define TBP_NO_PIN -1
@@ -15,14 +15,15 @@ class TBeamPower
 {
 protected:
     AXP20X_Class axp;
-    int sensor_pwr_pin; // gpio that controls power to sensors
-    int battery_pin;    // Battery power sensor
-    bool hasAXP192;
-    int adxsda;
-    int adxscl;
+    int _sensor_pwr_pin; // gpio that controls power to sensors
+    int _battery_pin;    // Battery power sensor
+    int _led_pin;
+    bool _hasAXP192;
+    int _adxsda;
+    int _adxscl;
 
  public:
-    TBeamPower(int adx_sda = 21, int adx_scl = 22, int sensor_pwr_pin = TBP_NO_PIN, int batt_pin = TBP_NO_PIN);
+    TBeamPower(int adx_sda = 21, int adx_scl = 22, int sensor_pwr_pin = TBP_NO_PIN, int batt_pin = TBP_NO_PIN, int led_pin = TBP_NO_PIN);
     void begin(void);
     bool hasAXP();
     void print_status();

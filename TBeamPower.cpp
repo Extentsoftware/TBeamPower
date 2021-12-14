@@ -3,25 +3,26 @@
 
 #define S_to_uS_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 
-TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin)
+TBeamPower::TBeamPower(int adx_sda, int adx_scl, int pwr_pin, int batt_pin, int led_pin)
 {
-    sensor_pwr_pin = pwr_pin;
-    battery_pin = batt_pin;
-    adxsda=adx_sda;
-    adxscl=adx_scl;
+    _sensor_pwr_pin = pwr_pin;
+    _battery_pin = batt_pin;
+    _adxsda=adx_sda;
+    _adxscl=adx_scl;
+    _led_pin = led_pin;
 }
 
 void TBeamPower::begin(void)
 {
-    if (adxsda==TBP_NO_PIN)
+    if (_adxsda==TBP_NO_PIN)
     {
-        hasAXP192 = false;    
+        _hasAXP192 = false;    
     }
     else
     {
-        Wire.begin(adxsda, adxscl);  
-        hasAXP192 = !axp.begin(Wire, AXP192_SLAVE_ADDRESS);
-        if (hasAXP192)
+        Wire.begin(_adxsda, _adxscl);  
+        _hasAXP192 = !axp.begin(Wire, AXP192_SLAVE_ADDRESS);
+        if (_hasAXP192)
         {
             Serial.println("AXP192 Begin PASS");
             axp.setDCDC1Voltage(3300);
@@ -36,10 +37,10 @@ void TBeamPower::begin(void)
 }
 
 bool TBeamPower::hasAXP(void){
-    return hasAXP192;
+    return _hasAXP192;
 }
 void TBeamPower::shutdown(void){
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         axp.shutdown();
     }
@@ -76,12 +77,17 @@ void TBeamPower::print_wakeup_reason()
 
 void TBeamPower::led_onoff(bool on)
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         if (on)
             axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
         else
             axp.setChgLEDMode(AXP20X_LED_OFF);
+    }
+    if (_led_pin != TBP_NO_PIN)
+    {
+          pinMode(_led_pin, OUTPUT);    // power enable for the sensors
+          digitalWrite(_led_pin, on?HIGH:LOW); // turn off power to the sensor bus
     }
 }
 
@@ -99,7 +105,7 @@ void TBeamPower::flashlight(char code)
 
 void TBeamPower::print_status()
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         Serial.printf("Voltages:\n");
         Serial.printf("         DCDC1: %.2fv\n", axp.getDCDC1Voltage() / 1000.0);
@@ -127,40 +133,40 @@ void TBeamPower::print_status()
 
 float TBeamPower::get_battery_voltage()
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         if (axp.isBatteryConnect())
             return axp.getBattVoltage() / 1000.0;
         else
             return 0.0;        
     }
-    else if(battery_pin == TBP_NO_PIN){
+    else if(_battery_pin == TBP_NO_PIN){
         return -1;
     }else{
         // we've set 10-bit ADC resolution 2^10=1024 and voltage divider makes it half of maximum readable value (which is 3.3V)
         // set battery measurement pin
-        adcAttachPin(battery_pin);
-        adcStart(battery_pin);
+        adcAttachPin(_battery_pin);
+        //adcStart(battery_pin);
         analogReadResolution(10); // Default of 12 is not very linear. Recommended to use 10 or 11 depending on needed resolution.
-        return analogRead(battery_pin) * 2.0 * (3.3 / 1024.0);
+        return analogRead(_battery_pin) * 2.0 * (3.3 / 1024.0);
     }
 }
 
 void TBeamPower::power_sensors(bool on)
 {
-    if(sensor_pwr_pin==TBP_NO_PIN){
+    if(_sensor_pwr_pin==TBP_NO_PIN){
         return;
     }else if (on){
-        pinMode(sensor_pwr_pin, OUTPUT);    // power enable for the sensors
-        digitalWrite(sensor_pwr_pin, HIGH); // turn off power to the sensor bus
+        pinMode(_sensor_pwr_pin, OUTPUT);    // power enable for the sensors
+        digitalWrite(_sensor_pwr_pin, HIGH); // turn off power to the sensor bus
     }
     else
-        digitalWrite(sensor_pwr_pin, LOW); // turn off power to the sensor bus
+        digitalWrite(_sensor_pwr_pin, LOW); // turn off power to the sensor bus
 }
 
 void TBeamPower::power_peripherals(bool on)
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         axp.setPowerOutPut(AXP192_DCDC1, on ? AXP202_ON : AXP202_OFF);
         axp.setPowerOutPut(AXP192_DCDC2, on ? AXP202_ON : AXP202_OFF);
@@ -171,7 +177,7 @@ void TBeamPower::power_peripherals(bool on)
 
 void TBeamPower::power_GPS(bool on)
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         axp.setPowerOutPut(AXP192_LDO3, on ? AXP202_ON : AXP202_OFF); // GPS Power
     }
@@ -179,7 +185,7 @@ void TBeamPower::power_GPS(bool on)
 
 void TBeamPower::power_LoRa(bool on)
 {
-    if (hasAXP192)
+    if (_hasAXP192)
     {
         axp.setPowerOutPut(AXP192_LDO2, on ? AXP202_ON : AXP202_OFF); // LoRa Power
     }
