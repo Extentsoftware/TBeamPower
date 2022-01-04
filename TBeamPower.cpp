@@ -25,7 +25,11 @@ void TBeamPower::begin(void)
         if (_hasAXP192)
         {
             Serial.println("AXP192 Begin PASS");
-            axp.setDCDC1Voltage(3300);
+            
+            axp.setAdcSamplingRate(AXP_ADC_SAMPLING_RATE_25HZ);
+            axp.adc1Enable(AXP202_VBUS_VOL_ADC1, true);
+            axp.adc1Enable(AXP202_VBUS_CUR_ADC1, true);
+            axp.setDCDC1Voltage(3300);            
             led_onoff(false);
         }
         else
@@ -107,27 +111,35 @@ void TBeamPower::print_status()
 {
     if (_hasAXP192)
     {
-        Serial.printf("Voltages:\n");
+        Serial.printf("Input  Voltages:\n");
+        Serial.printf("      Vbus:     %.2fv  %.2f mA\n", axp.getVbusVoltage() / 1000.0, axp.getVbusCurrent());
+        Serial.printf("      Batt:     %.2fv  %.2f mA\n", axp.getBattVoltage() / 1000.0, axp.getBattDischargeCurrent());
+        Serial.printf("Output Voltages:\n");
         Serial.printf("         DCDC1: %.2fv\n", axp.getDCDC1Voltage() / 1000.0);
         Serial.printf("         DCDC2: %.2fv\n", axp.getDCDC2Voltage() / 1000.0);
         Serial.printf("         DCDC3: %.2fv\n", axp.getDCDC3Voltage() / 1000.0);
-        Serial.printf("         LDO2: %.2fv\n", axp.getLDO2Voltage()  / 1000.0);
-        Serial.printf("         LDO3: %.2fv\n", axp.getLDO3Voltage()  / 1000.0);
-        Serial.printf("ChargeCurrent:   %.2fA\n", axp.getSettingChargeCurrent()/1000.0);
-        Serial.printf("IPSOUTVoltage:   %.2fv\n", axp.getSysIPSOUTVoltage() / 1000.0);
-        Serial.printf("Temp:            %.2f°C\n", axp.getTemp() /10.0);
-        Serial.printf("TSTemp:          %.2f\n", axp.getTSTemp());
-        Serial.printf("VbusCurrent:     %.2f\n", axp.getVbusCurrent());
-        Serial.printf("VbusVoltage:     %.2f\n", axp.getVbusVoltage() / 1000.0);
+        Serial.printf("          LDO2: %.2fv\n", axp.getLDO2Voltage()  / 1000.0);
+        Serial.printf("          LDO3: %.2fv\n", axp.getLDO3Voltage()  / 1000.0);
+        Serial.printf("ChargeCurrent:  %.2fA\n", axp.getSettingChargeCurrent()/1000.0);
+        Serial.printf("IPSOUTVoltage:  %.2fv\n", axp.getSysIPSOUTVoltage() / 1000.0);
+        Serial.printf("Temp:           %.2f°C\n", axp.getTemp());
+        Serial.printf("TSTemp:         %.2f\n", axp.getTSTemp());
+        delay(100);
         Serial.printf("Battery:\n");
-        Serial.printf("         Connected: %s\n",    axp.isBatteryConnect()?"true":"false");
-        Serial.printf("         Charging:  %s\n",    axp.isChargeing()?"true":"false");
-        Serial.printf("         ChargEN :  %s\n",    axp.isChargeingEnable()?"true":"false");
+        delay(100);
         Serial.printf("         Voltage:   %.2fv\n", axp.getBattVoltage() / 1000.0);
-        //Serial.printf("         Percent:   %d\n",    axp.getBattPercentage());
-        Serial.printf("         Inpower:   %.2f\n",  axp.getBattInpower() /1000.0);
-        Serial.printf("         DischgCur: %.2f\n",  axp.getBattDischargeCurrent()/1000.0);
+        delay(100);
+        //Serial.printf("         Inpower:   %.2f\n",  axp.getBattInpower() /1000.0);
         Serial.printf("         ChargeCur: %.2f\n",  axp.getBattChargeCurrent()/1000.0);      
+        delay(100);
+        Serial.printf("         Connected: %s\n",    axp.isBatteryConnect()?"true":"false");
+        delay(100);
+        Serial.printf("         ChargEN :  %s\n",    axp.isChargeingEnable()?"true":"false");
+        delay(100);
+        Serial.printf("         Percent:   %d\n",    axp.getBattPercentage());
+        delay(100);
+        Serial.printf("         Charging:  %s\n",    axp.isChargeing()?"true":"false");
+        delay(100);
     }
 }
 
@@ -150,6 +162,18 @@ float TBeamPower::get_battery_voltage()
         analogReadResolution(10); // Default of 12 is not very linear. Recommended to use 10 or 11 depending on needed resolution.
         return analogRead(_battery_pin) * 2.0 * (3.3 / 1024.0);
     }
+}
+
+float TBeamPower::get_supply_voltage()
+{
+    if (_hasAXP192)
+    {
+        float v = axp.getVbusVoltage() / 1000.0;
+        if (v>0)
+            return v;
+    }
+
+    return get_battery_voltage();
 }
 
 void TBeamPower::power_sensors(bool on)

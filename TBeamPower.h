@@ -1,4 +1,4 @@
-   #ifndef __TBEAMPOWER
+#ifndef __TBEAMPOWER
 #define __TBEAMPOWER
 
 #define TBP_NO_PIN -1
@@ -31,6 +31,7 @@ protected:
     void flashlight(char code);
     void led_onoff(bool on);
     float get_battery_voltage();
+    float get_supply_voltage();
     void deep_sleep(uint64_t timetosleep);
     void power_sensors(bool on);
     void power_peripherals(bool on);
